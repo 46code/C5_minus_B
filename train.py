@@ -538,8 +538,10 @@ def vald_net(net, loader, device='cuda'):
 
       with torch.no_grad():
 
-        predicted_ill, _, _, _, _ = net(histogram, model_in_N=model_histogram)
-
+        # corrected the output since bias is removed
+        # predicted_ill, _, _, _, _ = net(histogram, model_in_N=model_histogram)
+        predicted_ill, _, _, _ = net(histogram, model_in_N=model_histogram)
+        
         loss = ops.angular_loss(predicted_ill, gt)
 
         try:
