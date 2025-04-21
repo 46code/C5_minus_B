@@ -190,7 +190,7 @@ class network(nn.Module):
     rgb = ops.uv_to_rgb(torch.stack([u, v], dim=1), tensor=True)
     # changed the return to remove the bias
     # return rgb, P, F, B, G
-    return rgb, P, F, None, G
+    return rgb, P, F, G
 
 
 class ConvBlock(nn.Module):
