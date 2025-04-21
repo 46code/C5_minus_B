@@ -72,14 +72,15 @@ class network(nn.Module):
                            norm_type='BN')
     self.encoder.to(device=device)
 
+    # commented this part to remove the Bias 
     # B bias decoder
-    self.decoder_B = Decoder(output_channels=1,
-                             encoder_first_conv_depth=initial_conv_depth,
-                             encoder_max_conv_depth=max_conv_depth,
-                             normalization=True,
-                             norm_type='IN',
-                             depth=network_depth)
-    self.decoder_B.to(device=device)
+    # self.decoder_B = Decoder(output_channels=1,
+                             # encoder_first_conv_depth=initial_conv_depth,
+                             # encoder_max_conv_depth=max_conv_depth,
+                             # normalization=True,
+                             # norm_type='IN',
+                             # depth=network_depth)
+    # self.decoder_B.to(device=device)
 
     # F decoder
     self.decoder_F = Decoder(output_channels=2,
@@ -141,8 +142,9 @@ class network(nn.Module):
 
     latent, encoder_output = self.encoder(model_in_N)
     latent = self.bottleneck(latent)
-    B = self.decoder_B(latent, encoder_output)
-    B = torch.squeeze(B)
+    # commenteded this part to remove the bias
+    # B = self.decoder_B(latent, encoder_output)
+    # B = torch.squeeze(B)
 
     F = self.decoder_F(latent, encoder_output)
 
@@ -166,12 +168,15 @@ class network(nn.Module):
 
 
 
+    # commented this to remove the bias
     # adding the bias
     N_after_conv = torch.sum(N_after_conv, dim=1)
     if G is not None:
-      N_after_bias = (G * N_after_conv) + B
+      # N_after_bias = (G * N_after_conv) + B
+      N_after_bias = (G * N_after_conv)
     else:
-      N_after_bias = N_after_conv + B
+      # N_after_bias = N_after_conv + B
+      N_after_bias = N_after_conv
 
     # generating the heat map
     N_after_bias = torch.clamp(N_after_bias, -100, 100)
@@ -183,7 +188,9 @@ class network(nn.Module):
     v = torch.sum(P * self.v_coord, dim=[-1, -2])
     u, v = ops.from_coord_to_uv(self.input_size, u, v)
     rgb = ops.uv_to_rgb(torch.stack([u, v], dim=1), tensor=True)
-    return rgb, P, F, B, G
+    # changed the return to remove the bias
+    # return rgb, P, F, B, G
+    return rgb, P, F, None, G
 
 
 class ConvBlock(nn.Module):
