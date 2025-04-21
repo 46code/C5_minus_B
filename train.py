@@ -45,11 +45,20 @@ torch.backends.cudnn.benchmark = False
 np.random.seed(0)
 
 
+# removed the smoothness_factor_B from function definition
+# def train_net(net, device, dir_img, val_dir_img=None, val_ratio=0.1,
+              # epochs=1000, batch_size=64, lr=0.001, l2reg=0.00001,
+              # grad_clip_value=0, increasing_batch_size=False, load_hist=True,
+              # data_num=7, chkpoint_period=10, smoothness_factor_F=0.15,
+              # smoothness_factor_B=0.02, smoothness_factor_G=0.02,
+              # optimizer_algo='Adam', learn_g=True, cross_validation=False,
+              # aug_dir=None, input_size=64, validation_frequency=10,
+              # model_name='c5_model', save_cp=True):
 def train_net(net, device, dir_img, val_dir_img=None, val_ratio=0.1,
               epochs=1000, batch_size=64, lr=0.001, l2reg=0.00001,
               grad_clip_value=0, increasing_batch_size=False, load_hist=True,
               data_num=7, chkpoint_period=10, smoothness_factor_F=0.15,
-              smoothness_factor_B=0.02, smoothness_factor_G=0.02,
+              smoothness_factor_G=0.02,
               optimizer_algo='Adam', learn_g=True, cross_validation=False,
               aug_dir=None, input_size=64, validation_frequency=10,
               model_name='c5_model', save_cp=True):
@@ -78,8 +87,8 @@ def train_net(net, device, dir_img, val_dir_img=None, val_ratio=0.1,
       value is 10.
     smoothness_factor_F: smoothness regularization factor of convolutional
       filter F; default value is 0.15.
-    smoothness_factor_B: smoothness regularization factor of bias B; default
-      value is 0.02.
+    # smoothness_factor_B: smoothness regularization factor of bias B; default
+      # value is 0.02. this part is removed.
     smoothness_factor_G: smoothness regularization factor of gain multiplier
       map G (applied if learn_g is True); default value is 0.02.
     optimizer_algo: Optimization algorithm: 'SGD' or 'Adam'; default is 'Adam'.
@@ -213,6 +222,9 @@ def train_net(net, device, dir_img, val_dir_img=None, val_ratio=0.1,
 
     if folds > 1:
       logging.info(f'Fold number {fold}.')
+    
+    # removed the below part from logging.info to remove the bias
+          # Smoothness factor B:   {smoothness_factor_B}
 
     logging.info(f'''Starting training:
           Model Name:            {model_name}
@@ -226,7 +238,6 @@ def train_net(net, device, dir_img, val_dir_img=None, val_ratio=0.1,
           Augmentation:          {augmentation}
           Increasing batch size: {increasing_batch_size}
           Smoothness factor F:   {smoothness_factor_F}
-          Smoothness factor B:   {smoothness_factor_B}
           Smoothness factor G:   {smoothness_factor_G}
           Learn G multiplier:    {learn_g}
           Grad. clipping:        {grad_clip_value}
@@ -297,8 +308,9 @@ def train_net(net, device, dir_img, val_dir_img=None, val_ratio=0.1,
 
           predicted_ill, P, F, B, G = net(histogram, model_in_N=model_histogram)
 
-          if len(B.shape) == 2:
-            B = torch.unsqueeze(B, dim=0)
+          # commented to remove bias
+          # if len(B.shape) == 2:
+            # B = torch.unsqueeze(B, dim=0)
 
           if len(F.shape) == 3:
             F = torch.unsqueeze(F, dim=0)
@@ -321,15 +333,16 @@ def train_net(net, device, dir_img, val_dir_img=None, val_ratio=0.1,
           F_chroma = F[:, 0, :, :]
           F_edges = F[:, 1, :, :]
 
+          # removed this part in order to remove the bias 
           # smoothing regularization for B
-          s_loss_B = smoothness_factor_B * (torch.mean(
-            torch.nn.functional.conv2d(
-              torch.unsqueeze(B, dim=1), u_variation, stride=1) ** 2) +
-                                            torch.mean(
-                                              torch.nn.functional.conv2d(
-                                                torch.unsqueeze(B, dim=1),
-                                                v_variation,
-                                                stride=1) ** 2))
+          # s_loss_B = smoothness_factor_B * (torch.mean(
+            # torch.nn.functional.conv2d(
+              # torch.unsqueeze(B, dim=1), u_variation, stride=1) ** 2) +
+                                            # torch.mean(
+                                              # torch.nn.functional.conv2d(
+                                                # torch.unsqueeze(B, dim=1),
+                                                # v_variation,
+                                                # stride=1) ** 2))
 
           # smoothing regularization for G (if applied)
           if G is not None:
@@ -358,7 +371,9 @@ def train_net(net, device, dir_img, val_dir_img=None, val_ratio=0.1,
                                             s_loss_F_edges)
 
           # final smoothing regularization
-          smoothness_loss = s_loss_F + s_loss_G + s_loss_B
+          # changed the smoothness_loss in order to remove the bias
+          # smoothness_loss = s_loss_F + s_loss_G + s_loss_B
+          smoothness_loss = s_loss_F + s_loss_G
 
           loss = loss + smoothness_loss
 
@@ -401,8 +416,9 @@ def train_net(net, device, dir_img, val_dir_img=None, val_ratio=0.1,
                 F_chroma, dim=1, norm=True), global_step)
               writer.add_images('F-edges (time domain)', ops.vis_tensor(
                 F_edges, dim=1, norm=True), global_step)
-              writer.add_images('B', ops.vis_tensor(B, dim=1, norm=True),
-                                global_step)
+              # commented this to remove the bias
+              # writer.add_images('B', ops.vis_tensor(B, dim=1, norm=True),
+                                # global_step)
               if G is not None:
                 writer.add_images('G', ops.vis_tensor(G, dim=1, norm=True),
                                   global_step)
@@ -598,9 +614,10 @@ def get_args():
                       dest='smoothness_factor_F', type=float, default=0.15,
                       help='Smoothness regularization factor of conv filter')
 
-  parser.add_argument('-slb', '--smoothness-factor-B',
-                      dest='smoothness_factor_B', type=float, default=0.02,
-                      help='Smoothness regularization factor of bias')
+  # removed this part in order to remove the bias
+  # parser.add_argument('-slb', '--smoothness-factor-B',
+                      # dest='smoothness_factor_B', type=float, default=0.02,
+                      # help='Smoothness regularization factor of bias')
 
   parser.add_argument('-slg', '--smoothness-factor-G',
                       dest='smoothness_factor_G', type=float, default=0.02,
@@ -667,7 +684,8 @@ if __name__ == '__main__':
               val_dir_img=args.in_vldir, epochs=args.epochs,
               batch_size=args.batch_size, lr=args.lr, data_num=args.data_num,
               smoothness_factor_F=args.smoothness_factor_F,
-              smoothness_factor_B=args.smoothness_factor_B,
+              # commented this part to remove bias
+              # smoothness_factor_B=args.smoothness_factor_B,
               smoothness_factor_G=args.smoothness_factor_G,
               l2reg=args.l2r, load_hist=args.load_hist, learn_g=args.learn_g,
               optimizer_algo=args.optimizer, aug_dir=args.aug_dir,
