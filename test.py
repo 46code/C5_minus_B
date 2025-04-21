@@ -122,7 +122,9 @@ def test_net(net, device, dir_img, batch_size=64, input_size=64, data_num=7,
         gt_ill = batch['gt_ill']
         gt_ill = gt_ill.to(device=device, dtype=torch.float32)
 
-        predicted_ill, _, _, _, _ = net(histogram, model_in_N=model_histogram)
+        # corrected the output since bias is removed
+        # predicted_ill, _, _, _, _ = net(histogram, model_in_N=model_histogram)
+        predicted_ill, _, _, _ = net(histogram, model_in_N=model_histogram)
 
         if white_balance and test_i == 0:
           bs = image.shape[0]
