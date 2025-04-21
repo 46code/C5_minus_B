@@ -305,8 +305,10 @@ def train_net(net, device, dir_img, val_dir_img=None, val_ratio=0.1,
           # gt illuminant color batch
           gt = batch['gt_ill']
           gt = gt.to(device=device, dtype=torch.float32)
-
-          predicted_ill, P, F, B, G = net(histogram, model_in_N=model_histogram)
+          
+          # removed the bias
+          # predicted_ill, P, F, B, G = net(histogram, model_in_N=model_histogram)
+          predicted_ill, P, F, G = net(histogram, model_in_N=model_histogram)
 
           # commented to remove bias
           # if len(B.shape) == 2:
