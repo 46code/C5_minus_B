@@ -9,7 +9,7 @@ To expand camera sensor samples (listed in the **Data Augmentation** section of 
 2. Generate synthetic images and ground truth files using `data_aug.py`.  
 
 ## Compatibility Note  
-For **PyTorch 1.8+**, use the provided `c5.py` script.  
+For **PyTorch 1.8+**, use the provided `c5.py` script for with Bias network.  
 
 ## Angular Error Calculation  
 Compute angular error metrics between predicted and ground truth illuminants using `angular_err.m`:  
