@@ -16,7 +16,7 @@ Compute angular error metrics between predicted and ground truth illuminants usi
 - Mean, median, min, max, and standard deviation of angular error.  
 
 ## Models  
-The `project_files/models/` directory contains four trained models. To test:  
+The `project_files/models/` directory contains six trained models. To test:  
 1. Place your chosen model in the `models/` directory.  
 2. Follow testing instructions in the main README.  
 
